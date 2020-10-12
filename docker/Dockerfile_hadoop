@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-# Docker image with Hadoop/Hive/HBase/Spark/ZK/Kafka/Livy installed
+# Docker image with Hadoop/Hive/HBase/Spark/ZK/Kafka/Livy/Sqoop installed
 FROM centos:6.9
 
 ENV HIVE_VERSION 1.2.1
@@ -36,7 +36,6 @@ ENV SPARK_HOME /home/admin/spark-$SPARK_VERSION-bin-hadoop2.6
 ENV SPARK_CONF_DIR /home/admin/spark-$SPARK_VERSION-bin-hadoop2.6/conf
 ENV KAFKA_HOME /home/admin/kafka_2.11-$KAFKA_VERSION
 ENV LIVY_HOME /home/admin/apache-livy-$LIVY_VERSION-incubating-bin
-ENV PATH $PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HIVE_HOME/bin:$HBASE_HOME/bin:$MVN_HOME/bin:spark-$SPARK_VERSION-bin-hadoop2.6/bin:$KAFKA_HOME/bin
 
 USER root
 
@@ -102,3 +101,19 @@ RUN wget https://www.apache.org/dist/incubator/livy/$LIVY_VERSION-incubating/apa
     && unzip /home/admin/apache-livy-$LIVY_VERSION-incubating-bin.zip \
     && rm -f /home/admin/apache-livy-$LIVY_VERSION-incubating-bin.zip
 
+# setup sqoop
+ENV SQOOP_VERSION 1.4.7
+ENV SQOOP_HOME /home/admin/sqoop-$SQOOP_VERSION
+ENV SQOOP_LIB_DIR $SQOOP_HOME/lib
+RUN wget https://archive.apache.org/dist/sqoop/$SQOOP_VERSION/sqoop-$SQOOP_VERSION.tar.gz \
+    && tar -zxvf /home/admin/sqoop-$SQOOP_VERSION.tar.gz \
+    && rm -f /home/admin/sqoop-$SQOOP_VERSION.tar.gz
+
+# setup mysql connector
+ENV MYSQL_CONNECCTOR_VERSION 8.0.21
+RUN wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-$MYSQL_CONNECCTOR_VERSION.tar.gz \
+    && tar -zxvf /home/admin/mysql-connector-java-$MYSQL_CONNECCTOR_VERSION.tar.gz \
+    && mv /home/admin/mysql-connector-java-$MYSQL_CONNECCTOR_VERSION/mysql-connector-java-$MYSQL_CONNECCTOR_VERSION.jar $SQOOP_LIB_DIR \
+    && rm -rf /home/admin/mysql-connector-java-$MYSQL_CONNECCTOR_VERSION*
+
+ENV PATH $PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HIVE_HOME/bin:$HBASE_HOME/bin:$MVN_HOME/bin:spark-$SPARK_VERSION-bin-hadoop2.6/bin:$KAFKA_HOME/bin:$SQOOP_HOME/bin
